@@ -9,7 +9,7 @@ import Listening from './pages/Listening'
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/english-learner">
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<Dashboard />} />

@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/english-learner/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>english-learner</title>
+    <script>
+      // Redirect to index.html with path query for SPA routing
+      var path = window.location.pathname.slice('/english-learner'.length)
+      window.location.replace('/english-learner/?' + path)
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
