@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Plus, Check, BookmarkPlus, Trash2 } from 'lucide-react'
 import AudioButton from './AudioButton'
 import type { DictionaryEntry, Word } from '../types/word'
@@ -47,6 +47,13 @@ export default function WordDetailCard({
   const phonetic = entry?.phonetic || localWord?.phonetic || ''
   const audioUrl = entry?.audioUrl ?? localWord?.audioUrl
   const synonyms = entry?.synonyms ?? localWord?.synonyms ?? []
+  const cnTranslation = entry?.cnTranslation || localWord?.meaning || ''
+
+  useEffect(() => {
+    if (entry?.cnTranslation && !localWord?.meaning && !meaningInput) {
+      setMeaningInput(entry.cnTranslation)
+    }
+  }, [entry?.cnTranslation, localWord?.meaning])
 
   const breakdown = entry?.phoneticBreakdown ?? (localWord?.enDefinition
     ? [{ pos: localWord.pos || '', definition: localWord.enDefinition }]
@@ -199,8 +206,8 @@ export default function WordDetailCard({
                 >
                   {b.definition}
                 </p>
-                {i === 0 && localWord?.meaning && (
-                  <p className="mt-1.5 text-sm text-gray-500 dark:text-gray-400">{localWord.meaning}</p>
+                {i === 0 && cnTranslation && (
+                  <p className="mt-1.5 text-sm text-gray-500 dark:text-gray-400">{cnTranslation}</p>
                 )}
                 {b.example && (
                   <p className="mt-2 text-sm italic text-gray-500 dark:text-gray-400 border-l-2 border-gray-200 dark:border-gray-700 pl-3">

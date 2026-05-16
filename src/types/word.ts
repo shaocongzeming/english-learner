@@ -49,4 +49,5 @@ export interface DictionaryEntry {
   phoneticBreakdown: Array<{ pos: string; definition: string; example?: string }>
   audioUrl: string | null
   synonyms: string[]
+  cnTranslation?: string | null
 }
