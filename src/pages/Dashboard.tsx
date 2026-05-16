@@ -1,16 +1,17 @@
 import { Link } from 'react-router-dom'
-import { BookOpen, ArrowRight, XCircle } from 'lucide-react'
+import { BookOpen, ArrowRight, XCircle, Bookmark } from 'lucide-react'
 import { useWordStore } from '../stores/useWordStore'
 import { dailyWords } from '../data/vocabulary/daily'
+import WordOfTheDay from '../components/WordOfTheDay'
 
 export default function Dashboard() {
-  const { getDueWords, getNewWords, getTodayStats, progress, getMistakeWordIds } = useWordStore()
+  const { getDueWords, getNewWords, getTodayStats, progress, getMistakeWordIds, customWords } = useWordStore()
   const stats = getTodayStats()
 
-  const allWordIds = dailyWords.map((w) => w.id)
+  const allWordIds = [...dailyWords.map((w) => w.id), ...customWords.map((w) => w.id)]
   const dueCount = getDueWords(allWordIds).length
   const newCount = getNewWords(allWordIds).length
-  const totalWords = dailyWords.length
+  const totalWords = dailyWords.length + customWords.length
   const masteredCount = Object.values(progress).filter((p) => p.status === 'mastered').length
   const mistakeCount = getMistakeWordIds().length
   const totalStudied = stats.newWords + stats.reviewed
@@ -24,10 +25,12 @@ export default function Dashboard() {
         </p>
       </div>
 
+      <WordOfTheDay />
+
       {/* Today stats */}
       <div className="grid grid-cols-2 gap-3">
         <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
-          <p className="text-3xl font-bold text-primary dark:text-blue-400">{totalStudied}</p>
+          <p className="text-3xl font-bold text-mw-red">{totalStudied}</p>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">今日已学</p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
@@ -53,23 +56,42 @@ export default function Dashboard() {
       {/* Progress bar */}
       <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
         <div className="flex justify-between text-sm mb-2">
-          <span className="text-gray-500 dark:text-gray-400">日常词汇进度</span>
+          <span className="text-gray-500 dark:text-gray-400">总词汇进度</span>
           <span className="font-medium">
             {masteredCount} / {totalWords}
           </span>
         </div>
         <div className="h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
           <div
-            className="h-full bg-primary dark:bg-blue-400 rounded-full transition-all duration-500"
+            className="h-full bg-mw-red rounded-full transition-all duration-500"
             style={{ width: `${totalWords ? (masteredCount / totalWords) * 100 : 0}%` }}
           />
         </div>
       </div>
 
+      {/* My words */}
+      <Link
+        to="/vocabulary/my"
+        className="flex items-center justify-between bg-white dark:bg-gray-800 hover:border-mw-red/40 rounded-xl p-4 border border-gray-200 dark:border-gray-700 transition-colors"
+      >
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-mw-red/10 text-mw-red">
+            <Bookmark size={20} />
+          </div>
+          <div>
+            <p className="font-medium">我的词库</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {customWords.length > 0 ? `${customWords.length} 个自定义单词` : '搜索查词,一键加入'}
+            </p>
+          </div>
+        </div>
+        <ArrowRight size={18} className="text-gray-400" />
+      </Link>
+
       {/* Quick start */}
       <Link
         to="/vocabulary"
-        className="flex items-center justify-between bg-primary hover:bg-primary-hover text-white rounded-xl p-4 transition-colors"
+        className="flex items-center justify-between bg-mw-red hover:bg-mw-red-hover text-white rounded-xl p-4 transition-colors"
       >
         <div className="flex items-center gap-3">
           <BookOpen size={24} />
@@ -77,7 +99,7 @@ export default function Dashboard() {
             <p className="font-medium">
               {dueCount > 0 ? '继续复习' : newCount > 0 ? '开始学习' : '今日任务已完成'}
             </p>
-            <p className="text-sm text-blue-100">
+            <p className="text-sm text-red-100">
               {dueCount > 0
                 ? `${dueCount} 个单词待复习`
                 : newCount > 0

@@ -1,11 +1,11 @@
 import { Link } from 'react-router-dom'
-import { BookOpen, XCircle } from 'lucide-react'
+import { BookOpen, XCircle, Bookmark, ArrowRight } from 'lucide-react'
 import { useWordStore } from '../../stores/useWordStore'
 import { dailyWords } from '../../data/vocabulary/daily'
 
 export default function VocabularyIndex() {
-  const { getDueWords, getNewWords, progress, getMistakeWordIds } = useWordStore()
-  const allWordIds = dailyWords.map((w) => w.id)
+  const { getDueWords, getNewWords, progress, getMistakeWordIds, customWords } = useWordStore()
+  const allWordIds = [...dailyWords.map((w) => w.id), ...customWords.map((w) => w.id)]
   const dueCount = getDueWords(allWordIds).length
   const newCount = getNewWords(allWordIds).length
   const masteredCount = Object.values(progress).filter((p) => p.status === 'mastered').length
@@ -22,8 +22,12 @@ export default function VocabularyIndex() {
       {/* Main word bank card */}
       <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700 space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="font-medium text-lg">日常高频词汇</h3>
-          <span className="text-sm text-gray-500 dark:text-gray-400">{dailyWords.length} 词</span>
+          <h3 className="font-medium text-lg" style={{ fontFamily: 'var(--font-serif)' }}>
+            日常高频词汇 + 我的词库
+          </h3>
+          <span className="text-sm text-gray-500 dark:text-gray-400">
+            {dailyWords.length + customWords.length} 词
+          </span>
         </div>
 
         <div className="grid grid-cols-3 gap-3 text-center text-sm">
@@ -31,8 +35,8 @@ export default function VocabularyIndex() {
             <p className="text-xl font-bold text-orange-500">{dueCount}</p>
             <p className="text-gray-500 dark:text-gray-400">待复习</p>
           </div>
-          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg py-3">
-            <p className="text-xl font-bold text-primary dark:text-blue-400">{newCount}</p>
+          <div className="bg-red-50 dark:bg-red-950/30 rounded-lg py-3">
+            <p className="text-xl font-bold text-mw-red">{newCount}</p>
             <p className="text-gray-500 dark:text-gray-400">新词</p>
           </div>
           <div className="bg-green-50 dark:bg-green-900/20 rounded-lg py-3">
@@ -45,7 +49,7 @@ export default function VocabularyIndex() {
           to="/vocabulary/study"
           className={`block text-center py-3 rounded-lg font-medium transition-colors ${
             canStudy
-              ? 'bg-primary hover:bg-primary-hover text-white'
+              ? 'bg-mw-red hover:bg-mw-red-hover text-white'
               : 'bg-gray-100 dark:bg-gray-700 text-gray-400 cursor-not-allowed'
           }`}
           onClick={(e) => !canStudy && e.preventDefault()}
@@ -53,6 +57,34 @@ export default function VocabularyIndex() {
           {canStudy ? `开始学习 (${studyCount} 词)` : '今日任务已完成'}
         </Link>
       </div>
+
+      {/* My words card */}
+      <Link
+        to="/vocabulary/my"
+        className="flex items-center justify-between bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700 hover:border-mw-red/40 transition-colors"
+      >
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-mw-red/10 text-mw-red">
+            <Bookmark size={22} />
+          </div>
+          <div>
+            <p className="font-medium">我的词库</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {customWords.length > 0
+                ? `${customWords.length} 个自定义单词,已纳入学习`
+                : '在顶部搜索任意英文词,一键加入'}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          {customWords.length > 0 && (
+            <span className="bg-mw-red/10 text-mw-red text-xs font-bold px-2 py-1 rounded-full">
+              {customWords.length}
+            </span>
+          )}
+          <ArrowRight size={18} className="text-gray-400" />
+        </div>
+      </Link>
 
       {/* Mistake book card */}
       <Link

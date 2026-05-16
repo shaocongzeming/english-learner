@@ -1,7 +1,8 @@
-import { useState } from 'react'
-import { Volume2 } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import type { Word, Grade } from '../types/word'
-import { useTTS } from '../hooks/useTTS'
+import AudioButton from './AudioButton'
+import { lookupWord } from '../services/dictionaryApi'
+import { useWordStore } from '../stores/useWordStore'
 
 interface FlashCardProps {
   word: Word
@@ -12,7 +13,7 @@ interface FlashCardProps {
 
 export default function FlashCard({ word, onGrade, index, total }: FlashCardProps) {
   const [flipped, setFlipped] = useState(false)
-  const { speak } = useTTS()
+  const enrich = useWordStore((s) => s.enrichWord)
 
   const handleFlip = () => setFlipped(!flipped)
 
@@ -21,6 +22,28 @@ export default function FlashCard({ word, onGrade, index, total }: FlashCardProp
     onGrade(grade)
   }
 
+  // Lazy enrichment: when flipping to back, if EN definition or audio missing, fetch in background.
+  useEffect(() => {
+    if (!flipped) return
+    if (word.enDefinition && word.audioUrl) return
+    let cancelled = false
+    lookupWord(word.word)
+      .then((entry) => {
+        if (cancelled || !entry) return
+        enrich(word.id, {
+          enDefinition: word.enDefinition ?? entry.phoneticBreakdown[0]?.definition,
+          audioUrl: word.audioUrl ?? entry.audioUrl ?? undefined,
+          synonyms: word.synonyms ?? entry.synonyms,
+        })
+      })
+      .catch(() => {
+        // Silent — fall back to TTS / existing data.
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [flipped, word.id, word.word, word.enDefinition, word.audioUrl, word.synonyms, enrich])
+
   return (
     <div className="space-y-4">
       {/* Progress */}
@@ -28,7 +51,7 @@ export default function FlashCard({ word, onGrade, index, total }: FlashCardProp
         <span>{index + 1} / {total}</span>
         <div className="flex-1 mx-3 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
           <div
-            className="h-full bg-primary dark:bg-blue-400 rounded-full transition-all duration-300"
+            className="h-full bg-mw-red rounded-full transition-all duration-300"
             style={{ width: `${((index + 1) / total) * 100}%` }}
           />
         </div>
@@ -41,7 +64,7 @@ export default function FlashCard({ word, onGrade, index, total }: FlashCardProp
         style={{ perspective: '1000px' }}
       >
         <div
-          className="relative w-full min-h-[320px] transition-transform duration-500"
+          className="relative w-full min-h-[340px] transition-transform duration-500"
           style={{
             transformStyle: 'preserve-3d',
             transform: flipped ? 'rotateY(180deg)' : '',
@@ -49,54 +72,74 @@ export default function FlashCard({ word, onGrade, index, total }: FlashCardProp
         >
           {/* Front */}
           <div
-            className="absolute inset-0 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-8 flex flex-col items-center justify-center"
+            className="absolute inset-0 bg-gradient-to-br from-mw-cream to-white dark:from-gray-800 dark:to-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-8 flex flex-col items-center justify-center"
             style={{ backfaceVisibility: 'hidden' }}
           >
-            <p className="text-4xl font-bold mb-4">{word.word}</p>
-            <p className="text-lg text-gray-500 dark:text-gray-400 mb-6">{word.phonetic}</p>
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                speak(word.word)
-              }}
-              className="p-3 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            <p
+              className="text-5xl font-bold mb-4 text-mw-ink dark:text-white tracking-tight"
+              style={{ fontFamily: 'var(--font-serif)' }}
             >
-              <Volume2 size={24} className="text-primary dark:text-blue-400" />
-            </button>
+              {word.word}
+            </p>
+            <p className="text-lg text-gray-500 dark:text-gray-400 mb-6">{word.phonetic}</p>
+            <AudioButton
+              audioUrl={word.audioUrl}
+              fallbackText={word.word}
+              size={26}
+              className="inline-flex items-center justify-center w-14 h-14 rounded-full text-mw-red bg-white dark:bg-gray-700 shadow-sm hover:shadow-md transition-shadow"
+            />
             <p className="mt-6 text-sm text-gray-400 dark:text-gray-500">点击翻转查看释义</p>
           </div>
 
           {/* Back */}
           <div
-            className="absolute inset-0 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-8 flex flex-col items-center justify-center"
+            className="absolute inset-0 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-7 flex flex-col items-center overflow-y-auto"
             style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
           >
-            <p className="text-2xl font-bold mb-2">{word.word}</p>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
-              {word.phonetic} · {word.pos}
+            <div className="flex items-center gap-2 mb-1">
+              <p
+                className="text-2xl font-bold text-mw-ink dark:text-white"
+                style={{ fontFamily: 'var(--font-serif)' }}
+              >
+                {word.word}
+              </p>
+              <AudioButton
+                audioUrl={word.audioUrl}
+                fallbackText={word.word}
+                size={18}
+                className="inline-flex items-center justify-center w-8 h-8 rounded-full text-mw-red hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+              />
+            </div>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
+              {word.phonetic} {word.pos && `· ${word.pos}`}
             </p>
-            <p className="text-xl mb-6">{word.meaning}</p>
+
+            <p
+              className="text-xl font-medium text-mw-ink dark:text-white"
+              style={{ fontFamily: 'var(--font-serif)' }}
+            >
+              {word.meaning}
+            </p>
+
+            {word.enDefinition && (
+              <p
+                className="mt-2 text-sm text-gray-500 dark:text-gray-400 italic leading-relaxed text-center max-w-md"
+                style={{ fontFamily: 'var(--font-serif)' }}
+              >
+                {word.enDefinition}
+              </p>
+            )}
 
             {word.examples.length > 0 && (
-              <div className="w-full space-y-3 text-sm">
+              <div className="w-full space-y-2 text-sm mt-5">
                 {word.examples.slice(0, 2).map((ex, i) => (
                   <div key={i} className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
                     <p className="text-gray-700 dark:text-gray-300">{ex.en}</p>
-                    <p className="text-gray-400 dark:text-gray-500 mt-1">{ex.zh}</p>
+                    {ex.zh && <p className="text-gray-400 dark:text-gray-500 mt-1">{ex.zh}</p>}
                   </div>
                 ))}
               </div>
             )}
-
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                speak(word.word)
-              }}
-              className="mt-4 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-            >
-              <Volume2 size={20} className="text-primary dark:text-blue-400" />
-            </button>
           </div>
         </div>
       </div>

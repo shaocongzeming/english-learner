@@ -10,8 +10,15 @@ export interface Word {
   pos: string
   meaning: string
   examples: Example[]
-  level: 'cet4' | 'cet6' | 'daily'
+  level: 'cet4' | 'cet6' | 'daily' | 'custom'
   frequency: number
+  // Optional fields populated lazily from Dictionary API or filled by user.
+  enDefinition?: string
+  audioUrl?: string
+  synonyms?: string[]
+  // Optional. Existing preset data omits this; absence is treated as 'preset'.
+  source?: 'preset' | 'custom'
+  addedAt?: string
 }
 
 export type WordLevel = Word['level']
@@ -34,4 +41,12 @@ export interface DailyRecord {
   date: string
   newWordsLearned: number
   wordsReviewed: number
+}
+
+export interface DictionaryEntry {
+  word: string
+  phonetic: string
+  phoneticBreakdown: Array<{ pos: string; definition: string; example?: string }>
+  audioUrl: string | null
+  synonyms: string[]
 }
