@@ -8,15 +8,30 @@
   --color-success: #22c55e;
   --color-warning: #f59e0b;
   --color-danger: #ef4444;
+  /* Merriam-Webster inspired accents */
+  --color-mw-red: #c8102e;
+  --color-mw-red-hover: #a30d26;
+  --color-mw-cream: #faf7f2;
+  --color-mw-ink: #1a1a1a;
+  --font-serif: "Source Serif 4", "Source Serif Pro", "Lora", Georgia, "Times New Roman", serif;
 }
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 #root {
   min-height: 100vh;
+}
+
+/* Subtle ripple for audio button when playing */
+@keyframes audio-ripple {
+  0% { box-shadow: 0 0 0 0 rgba(200, 16, 46, 0.4); }
+  100% { box-shadow: 0 0 0 8px rgba(200, 16, 46, 0); }
+}
+.audio-ripple {
+  animation: audio-ripple 1s ease-out infinite;
 }

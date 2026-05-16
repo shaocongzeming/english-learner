@@ -1,18 +1,23 @@
 import { Link } from 'react-router-dom'
-import { ArrowLeft, Trash2, RotateCcw, Volume2, XCircle } from 'lucide-react'
+import { ArrowLeft, Trash2, RotateCcw, XCircle } from 'lucide-react'
 import { dailyWords } from '../../data/vocabulary/daily'
-import { useWordStore } from '../../stores/useWordStore'
-import { useTTS } from '../../hooks/useTTS'
+import { useWordStore, applyEnrichment } from '../../stores/useWordStore'
+import AudioButton from '../../components/AudioButton'
+import type { Word } from '../../types/word'
 
 export default function MistakeBook() {
-  const { mistakes, removeMistake, clearMistakes } = useWordStore()
-  const { speak } = useTTS()
+  const { mistakes, removeMistake, clearMistakes, customWords, enrichment } = useWordStore()
 
-  type MistakeEntry = (typeof mistakes)[string] & { word: (typeof dailyWords)[number] }
+  type MistakeEntry = (typeof mistakes)[string] & { word: Word }
+
+  const pool: Word[] = [
+    ...customWords,
+    ...dailyWords.map((w) => applyEnrichment(w, enrichment)),
+  ]
 
   const mistakeEntries: MistakeEntry[] = Object.values(mistakes)
     .map((m) => {
-      const word = dailyWords.find((w) => w.id === m.wordId)
+      const word = pool.find((w) => w.id === m.wordId)
       return word ? { ...m, word } : null
     })
     .filter(Boolean) as MistakeEntry[]
@@ -85,14 +90,20 @@ export default function MistakeBook() {
             <div className="flex items-start justify-between gap-3">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-lg">{entry.word.word}</span>
-                  <span className="text-sm text-gray-400 dark:text-gray-500">{entry.word.phonetic}</span>
-                  <button
-                    onClick={() => speak(entry.word.word)}
-                    className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+                  <Link
+                    to={`/word/${encodeURIComponent(entry.word.word.toLowerCase())}`}
+                    className="font-bold text-lg hover:text-mw-red transition-colors"
+                    style={{ fontFamily: 'var(--font-serif)' }}
                   >
-                    <Volume2 size={14} className="text-primary dark:text-blue-400" />
-                  </button>
+                    {entry.word.word}
+                  </Link>
+                  <span className="text-sm text-gray-400 dark:text-gray-500">{entry.word.phonetic}</span>
+                  <AudioButton
+                    audioUrl={entry.word.audioUrl}
+                    fallbackText={entry.word.word}
+                    size={14}
+                    className="inline-flex items-center justify-center w-7 h-7 rounded-full text-mw-red hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30 transition-colors"
+                  />
                 </div>
                 <p className="text-sm text-gray-400 dark:text-gray-500 mt-0.5">
                   {entry.word.pos} {entry.word.meaning}

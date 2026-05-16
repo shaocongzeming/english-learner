@@ -2,9 +2,9 @@ import { useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowLeft, RotateCcw, Trophy } from 'lucide-react'
 import { dailyWords } from '../../data/vocabulary/daily'
-import { useWordStore } from '../../stores/useWordStore'
+import { useWordStore, applyEnrichment } from '../../stores/useWordStore'
 import FlashCard from '../../components/FlashCard'
-import type { Grade } from '../../types/word'
+import type { Grade, Word } from '../../types/word'
 
 function shuffleArray<T>(arr: T[]): T[] {
   const result = [...arr]
@@ -16,10 +16,23 @@ function shuffleArray<T>(arr: T[]): T[] {
 }
 
 export default function StudyPage() {
-  const { getDueWords, getNewWords, updateProgress, addMistake, dailyNewTarget, getMistakeWordIds } = useWordStore()
+  const {
+    getDueWords,
+    getNewWords,
+    updateProgress,
+    addMistake,
+    dailyNewTarget,
+    getMistakeWordIds,
+    customWords,
+    enrichment,
+  } = useWordStore()
 
-  const studyQueue = useMemo(() => {
-    const allWordIds = dailyWords.map((w) => w.id)
+  const studyQueue = useMemo<Word[]>(() => {
+    const pool: Word[] = [
+      ...customWords,
+      ...dailyWords.map((w) => applyEnrichment(w, enrichment)),
+    ]
+    const allWordIds = pool.map((w) => w.id)
     const dueIds = getDueWords(allWordIds)
     const mistakeIds = getMistakeWordIds().filter((id) => allWordIds.includes(id))
     const mistakeNew = mistakeIds.filter((id) => !dueIds.includes(id))
@@ -28,18 +41,14 @@ export default function StudyPage() {
     const newSlots = Math.max(0, dailyNewTarget - dueIds.length - mistakeNew.length)
     const newSlice = newIds.slice(0, newSlots)
 
-    // Priority: mistakes due > review due > mistakes new > new words
-    const queue = [...dueIds, ...mistakeNew, ...newSlice]
-
-    // Shuffle within groups but keep priority
-    const dueWords = shuffleArray(queue.slice(0, dueIds.length))
-    const mistakeWords = shuffleArray(queue.slice(dueIds.length, dueIds.length + mistakeNew.length))
-    const newWords = shuffleArray(queue.slice(dueIds.length + mistakeNew.length))
+    const dueWords = shuffleArray(dueIds)
+    const mistakeWords = shuffleArray(mistakeNew)
+    const newWords = shuffleArray(newSlice)
 
     return [...dueWords, ...mistakeWords, ...newWords]
-      .map((id) => dailyWords.find((w) => w.id === id)!)
+      .map((id) => pool.find((w) => w.id === id)!)
       .filter(Boolean)
-  }, [getDueWords, getNewWords, dailyNewTarget, getMistakeWordIds])
+  }, [getDueWords, getNewWords, dailyNewTarget, getMistakeWordIds, customWords, enrichment])
 
   const [currentIndex, setCurrentIndex] = useState(0)
   const [results, setResults] = useState<Record<string, Grade>>({})
@@ -60,7 +69,7 @@ export default function StudyPage() {
           <p className="text-gray-500 dark:text-gray-400 mt-2">明天继续加油！</p>
           <Link
             to="/vocabulary"
-            className="inline-block mt-6 px-6 py-2 bg-primary hover:bg-primary-hover text-white rounded-lg transition-colors"
+            className="inline-block mt-6 px-6 py-2 bg-mw-red hover:bg-mw-red-hover text-white rounded-lg transition-colors"
           >
             返回词库
           </Link>
@@ -137,7 +146,7 @@ export default function StudyPage() {
               setResults({})
               setFinished(false)
             }}
-            className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-medium bg-primary text-white hover:bg-primary-hover transition-colors"
+            className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-medium bg-mw-red text-white hover:bg-mw-red-hover transition-colors"
           >
             <RotateCcw size={18} />
             再来一轮
