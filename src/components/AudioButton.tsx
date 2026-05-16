@@ -2,8 +2,8 @@ import { useRef, useState } from 'react'
 import { Volume2 } from 'lucide-react'
 import { useTTS } from '../hooks/useTTS'
 
-function getGoogleTTSUrl(text: string) {
-  return `https://translate.googleapis.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=en&client=gtx`
+function getYoudaoTTSUrl(text: string) {
+  return `https://dict.youdao.com/dictvoice?audio=${encodeURIComponent(text)}&type=2`
 }
 
 interface AudioButtonProps {
@@ -14,6 +14,7 @@ interface AudioButtonProps {
 }
 
 export default function AudioButton({
+  audioUrl,
   fallbackText,
   size = 20,
   className,
@@ -22,28 +23,41 @@ export default function AudioButton({
   const { speak } = useTTS()
   const [playing, setPlaying] = useState(false)
 
+  const playYoudao = () => {
+    const audio = new Audio(getYoudaoTTSUrl(fallbackText))
+    audioRef.current = audio
+    setPlaying(true)
+    audio.onended = () => setPlaying(false)
+    audio.onerror = () => {
+      setPlaying(false)
+      speak(fallbackText)
+    }
+    void audio.play().catch(() => {
+      setPlaying(false)
+      speak(fallbackText)
+    })
+  }
+
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation()
     e.preventDefault()
-    try {
-      if (audioRef.current) {
-        audioRef.current.pause()
-        audioRef.current = null
+    if (audioRef.current) {
+      audioRef.current.pause()
+      audioRef.current = null
+    }
+    if (audioUrl) {
+      try {
+        const audio = new Audio(audioUrl)
+        audioRef.current = audio
+        setPlaying(true)
+        audio.onended = () => setPlaying(false)
+        audio.onerror = () => playYoudao()
+        void audio.play().catch(() => playYoudao())
+      } catch {
+        playYoudao()
       }
-      const audio = new Audio(getGoogleTTSUrl(fallbackText))
-      audioRef.current = audio
-      setPlaying(true)
-      audio.onended = () => setPlaying(false)
-      audio.onerror = () => {
-        setPlaying(false)
-        speak(fallbackText)
-      }
-      void audio.play().catch(() => {
-        setPlaying(false)
-        speak(fallbackText)
-      })
-    } catch {
-      speak(fallbackText)
+    } else {
+      playYoudao()
     }
   }
 

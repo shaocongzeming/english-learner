@@ -1,4 +1,5 @@
 import type { DictionaryEntry } from '../types/word'
+import { fetchChineseTranslation } from './translateApi'
 
 const API_BASE = 'https://api.dictionaryapi.dev/api/v2/entries/en'
 const CACHE_KEY = 'dict-cache-v1'
@@ -155,6 +156,10 @@ export async function lookupWord(rawTerm: string): Promise<DictionaryEntry | nul
     }
     const data = (await res.json()) as ApiEntry[]
     const parsed = parseApiResponse(data)
+    if (parsed) {
+      const cnTranslation = await fetchChineseTranslation(term)
+      parsed.cnTranslation = cnTranslation
+    }
     writeToCache(term, parsed)
     return parsed
   } catch (err) {
