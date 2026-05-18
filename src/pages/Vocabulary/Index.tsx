@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { BookOpen, XCircle, Bookmark, ArrowRight } from 'lucide-react'
 import { useWordStore } from '../../stores/useWordStore'
 import { dailyWords } from '../../data/vocabulary/daily'
+import Mascot from '../../components/Mascot'
 
 export default function VocabularyIndex() {
   const { getDueWords, getNewWords, progress, getMistakeWordIds, customWords } = useWordStore()
@@ -17,12 +18,21 @@ export default function VocabularyIndex() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold">单词学习</h2>
+      <div className="bubbly-card rounded-[2rem] p-6">
+        <div className="relative z-10 flex items-center justify-between gap-5">
+          <div>
+            <p className="text-sm font-extrabold text-teal-700">Vocabulary Garden</p>
+            <h1 className="display-font mt-2 text-4xl text-slate-900 dark:text-white">单词学习</h1>
+            <p className="mt-2 text-sm font-semibold text-slate-500">每天把陌生词种成自己的词库。</p>
+          </div>
+          <Mascot size="md" mood="focus" gesture="reach" floating />
+        </div>
+      </div>
 
       {/* Main word bank card */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700 space-y-4">
+      <div className="cream-panel rounded-[2rem] p-5 space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="font-medium text-lg" style={{ fontFamily: 'var(--font-serif)' }}>
+          <h3 className="display-font text-2xl text-slate-900 dark:text-white">
             日常高频词汇 + 我的词库
           </h3>
           <span className="text-sm text-gray-500 dark:text-gray-400">
@@ -31,25 +41,25 @@ export default function VocabularyIndex() {
         </div>
 
         <div className="grid grid-cols-3 gap-3 text-center text-sm">
-          <div className="bg-orange-50 dark:bg-orange-900/20 rounded-lg py-3">
-            <p className="text-xl font-bold text-orange-500">{dueCount}</p>
+          <div className="rounded-2xl bg-orange-50 py-3 dark:bg-orange-900/20">
+            <p className="display-font text-3xl text-orange-500">{dueCount}</p>
             <p className="text-gray-500 dark:text-gray-400">待复习</p>
           </div>
-          <div className="bg-red-50 dark:bg-red-950/30 rounded-lg py-3">
-            <p className="text-xl font-bold text-mw-red">{newCount}</p>
+          <div className="rounded-2xl bg-teal-50 py-3 dark:bg-teal-950/30">
+            <p className="display-font text-3xl text-teal-600">{newCount}</p>
             <p className="text-gray-500 dark:text-gray-400">新词</p>
           </div>
-          <div className="bg-green-50 dark:bg-green-900/20 rounded-lg py-3">
-            <p className="text-xl font-bold text-success">{masteredCount}</p>
+          <div className="rounded-2xl bg-green-50 py-3 dark:bg-green-900/20">
+            <p className="display-font text-3xl text-success">{masteredCount}</p>
             <p className="text-gray-500 dark:text-gray-400">已掌握</p>
           </div>
         </div>
 
         <Link
           to="/vocabulary/study"
-          className={`block text-center py-3 rounded-lg font-medium transition-colors ${
+          className={`block text-center py-3 rounded-2xl font-extrabold transition-all ${
             canStudy
-              ? 'bg-mw-red hover:bg-mw-red-hover text-white'
+              ? 'bg-slate-900 hover:-translate-y-1 hover:bg-slate-800 text-white shadow-xl shadow-slate-300/40'
               : 'bg-gray-100 dark:bg-gray-700 text-gray-400 cursor-not-allowed'
           }`}
           onClick={(e) => !canStudy && e.preventDefault()}
@@ -61,10 +71,10 @@ export default function VocabularyIndex() {
       {/* My words card */}
       <Link
         to="/vocabulary/my"
-        className="flex items-center justify-between bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700 hover:border-mw-red/40 transition-colors"
+        className="flex items-center justify-between cream-panel rounded-[1.6rem] p-5 hover:border-teal-300 transition-all hover:-translate-y-1"
       >
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-mw-red/10 text-mw-red">
+          <div className="p-2 rounded-2xl bg-teal-100 text-teal-700">
             <Bookmark size={22} />
           </div>
           <div>
@@ -89,10 +99,10 @@ export default function VocabularyIndex() {
       {/* Mistake book card */}
       <Link
         to="/vocabulary/mistakes"
-        className="flex items-center justify-between bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700 hover:border-red-300 dark:hover:border-red-700 transition-colors"
+        className="flex items-center justify-between cream-panel rounded-[1.6rem] p-5 hover:border-red-300 dark:hover:border-red-700 transition-all hover:-translate-y-1"
       >
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-red-50 dark:bg-red-900/20">
+          <div className="p-2 rounded-2xl bg-red-50 dark:bg-red-900/20">
             <XCircle size={22} className="text-danger" />
           </div>
           <div>

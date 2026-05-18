@@ -77,10 +77,10 @@ export default function SearchBar({ compact = true, autoFocus = false, initialVa
   return (
     <div ref={containerRef} className="relative w-full">
       <div
-        className={`flex items-center gap-2 rounded-full border transition-colors bg-white dark:bg-gray-800 ${
+        className={`flex items-center gap-2 rounded-full border-2 transition-all bg-white/88 dark:bg-gray-800 ${
           compact
-            ? 'h-10 px-3 border-gray-200 dark:border-gray-700 focus-within:border-mw-red'
-            : 'h-14 px-5 border-gray-300 dark:border-gray-600 focus-within:border-mw-red shadow-sm'
+            ? 'h-10 px-3 border-white/80 dark:border-gray-700 focus-within:border-teal-300 focus-within:shadow-lg focus-within:shadow-teal-100'
+            : 'h-14 px-5 border-white/80 dark:border-gray-600 focus-within:border-teal-300 shadow-sm focus-within:shadow-lg focus-within:shadow-teal-100'
         }`}
       >
         <Search size={compact ? 16 : 20} className="text-gray-400 shrink-0" />
@@ -117,7 +117,7 @@ export default function SearchBar({ compact = true, autoFocus = false, initialVa
       </div>
 
       {open && suggestions.length > 0 && (
-        <div className="absolute left-0 right-0 mt-2 z-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg overflow-hidden">
+        <div className="absolute left-0 right-0 mt-2 z-40 bg-white/95 dark:bg-gray-800 border-2 border-white/80 dark:border-gray-700 rounded-2xl shadow-xl overflow-hidden">
           {suggestions.map((s) => (
             <button
               key={s.word}
@@ -126,12 +126,12 @@ export default function SearchBar({ compact = true, autoFocus = false, initialVa
                 e.preventDefault()
                 submit(s.word)
               }}
-              className="w-full flex items-center justify-between gap-3 px-4 py-2.5 text-left hover:bg-gray-50 dark:hover:bg-gray-700/60"
+              className="w-full flex items-center justify-between gap-3 px-4 py-2.5 text-left hover:bg-teal-50/80 dark:hover:bg-gray-700/60"
             >
               <span className="font-medium">{s.word}</span>
               <span className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 truncate">
                 {s.source === 'custom' && (
-                  <span className="text-[10px] uppercase tracking-wider text-mw-red font-semibold">My</span>
+                  <span className="text-[10px] uppercase tracking-wider text-teal-700 font-extrabold">My</span>
                 )}
                 <span className="truncate max-w-[160px]">{s.meaning ?? ''}</span>
               </span>
@@ -143,7 +143,7 @@ export default function SearchBar({ compact = true, autoFocus = false, initialVa
               e.preventDefault()
               submit(term)
             }}
-            className="w-full px-4 py-2.5 text-left text-sm text-mw-red font-medium hover:bg-red-50 dark:hover:bg-red-950/30 border-t border-gray-100 dark:border-gray-700"
+            className="w-full px-4 py-2.5 text-left text-sm text-teal-700 font-extrabold hover:bg-teal-50 dark:hover:bg-teal-950/30 border-t border-gray-100 dark:border-gray-700"
           >
             搜索 "{term}" →
           </button>
