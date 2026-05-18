@@ -6,7 +6,8 @@ import StudyPage from './pages/Vocabulary/Study'
 import MistakeBook from './pages/Vocabulary/Mistakes'
 import MyWords from './pages/Vocabulary/MyWords'
 import WordDetail from './pages/WordDetail'
-import Reading from './pages/Reading'
+import ReadingIndex from './pages/Reading/Index'
+import ReadingView from './pages/Reading/View'
 import Listening from './pages/Listening'
 
 export default function App() {
@@ -20,7 +21,8 @@ export default function App() {
           <Route path="/vocabulary/mistakes" element={<MistakeBook />} />
           <Route path="/vocabulary/my" element={<MyWords />} />
           <Route path="/word/:term" element={<WordDetail />} />
-          <Route path="/reading" element={<Reading />} />
+          <Route path="/reading" element={<ReadingIndex />} />
+          <Route path="/reading/:articleId" element={<ReadingView />} />
           <Route path="/listening" element={<Listening />} />
         </Route>
       </Routes>

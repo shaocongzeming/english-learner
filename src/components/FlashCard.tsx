@@ -3,15 +3,17 @@ import type { Word, Grade } from '../types/word'
 import AudioButton from './AudioButton'
 import { lookupWord } from '../services/dictionaryApi'
 import { useWordStore } from '../stores/useWordStore'
+import Mascot from './Mascot'
 
 interface FlashCardProps {
   word: Word
   onGrade: (grade: Grade) => void
   index: number
   total: number
+  streak?: number
 }
 
-export default function FlashCard({ word, onGrade, index, total }: FlashCardProps) {
+export default function FlashCard({ word, onGrade, index, total, streak = 0 }: FlashCardProps) {
   const [flipped, setFlipped] = useState(false)
   const enrich = useWordStore((s) => s.enrichWord)
 
@@ -48,10 +50,10 @@ export default function FlashCard({ word, onGrade, index, total }: FlashCardProp
     <div className="space-y-4">
       {/* Progress */}
       <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
-        <span>{index + 1} / {total}</span>
-        <div className="flex-1 mx-3 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+        <span className="font-extrabold text-teal-700">{index + 1} / {total}</span>
+        <div className="flex-1 mx-3 h-3 bg-white/80 dark:bg-gray-700 rounded-full overflow-hidden shadow-inner">
           <div
-            className="h-full bg-mw-red rounded-full transition-all duration-300"
+            className="h-full bg-gradient-to-r from-teal-400 via-lime-300 to-orange-300 rounded-full transition-all duration-500"
             style={{ width: `${((index + 1) / total) * 100}%` }}
           />
         </div>
@@ -72,12 +74,12 @@ export default function FlashCard({ word, onGrade, index, total }: FlashCardProp
         >
           {/* Front */}
           <div
-            className="absolute inset-0 bg-gradient-to-br from-mw-cream to-white dark:from-gray-800 dark:to-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-8 flex flex-col items-center justify-center"
+            className="absolute inset-0 bubbly-card rounded-[2.2rem] p-8 flex flex-col items-center justify-center"
             style={{ backfaceVisibility: 'hidden' }}
           >
+            <Mascot size="md" mood="curious" gesture="point-right" floating streak={streak} className="mb-5" />
             <p
-              className="text-5xl font-bold mb-4 text-mw-ink dark:text-white tracking-tight"
-              style={{ fontFamily: 'var(--font-serif)' }}
+              className="display-font text-6xl mb-3 text-slate-900 dark:text-white"
             >
               {word.word}
             </p>
@@ -86,20 +88,21 @@ export default function FlashCard({ word, onGrade, index, total }: FlashCardProp
               audioUrl={word.audioUrl}
               fallbackText={word.word}
               size={26}
-              className="inline-flex items-center justify-center w-14 h-14 rounded-full text-mw-red bg-white dark:bg-gray-700 shadow-sm hover:shadow-md transition-shadow"
+              className="inline-flex items-center justify-center w-14 h-14 rounded-full text-teal-700 bg-white dark:bg-gray-700 shadow-lg hover:shadow-xl transition-shadow"
             />
-            <p className="mt-6 text-sm text-gray-400 dark:text-gray-500">点击翻转查看释义</p>
+            <p className="mt-6 rounded-full bg-white/70 px-4 py-1.5 text-sm font-bold text-gray-500 dark:bg-gray-700/70 dark:text-gray-300">
+              点击翻转查看释义
+            </p>
           </div>
 
           {/* Back */}
           <div
-            className="absolute inset-0 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-7 flex flex-col items-center overflow-y-auto"
+            className="absolute inset-0 cream-panel rounded-[2.2rem] p-7 flex flex-col items-center overflow-y-auto"
             style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
           >
             <div className="flex items-center gap-2 mb-1">
               <p
-                className="text-2xl font-bold text-mw-ink dark:text-white"
-                style={{ fontFamily: 'var(--font-serif)' }}
+                className="display-font text-4xl text-slate-900 dark:text-white"
               >
                 {word.word}
               </p>
@@ -107,7 +110,7 @@ export default function FlashCard({ word, onGrade, index, total }: FlashCardProp
                 audioUrl={word.audioUrl}
                 fallbackText={word.word}
                 size={18}
-                className="inline-flex items-center justify-center w-8 h-8 rounded-full text-mw-red hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+                className="inline-flex items-center justify-center w-9 h-9 rounded-full text-teal-700 hover:bg-teal-50 dark:hover:bg-teal-950/30 transition-colors"
               />
             </div>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
@@ -115,8 +118,7 @@ export default function FlashCard({ word, onGrade, index, total }: FlashCardProp
             </p>
 
             <p
-              className="text-xl font-medium text-mw-ink dark:text-white"
-              style={{ fontFamily: 'var(--font-serif)' }}
+              className="text-2xl font-extrabold text-slate-900 dark:text-white"
             >
               {word.meaning}
             </p>
@@ -124,7 +126,6 @@ export default function FlashCard({ word, onGrade, index, total }: FlashCardProp
             {word.enDefinition && (
               <p
                 className="mt-2 text-sm text-gray-500 dark:text-gray-400 italic leading-relaxed text-center max-w-md"
-                style={{ fontFamily: 'var(--font-serif)' }}
               >
                 {word.enDefinition}
               </p>
@@ -133,7 +134,7 @@ export default function FlashCard({ word, onGrade, index, total }: FlashCardProp
             {word.examples.length > 0 && (
               <div className="w-full space-y-2 text-sm mt-5">
                 {word.examples.slice(0, 2).map((ex, i) => (
-                  <div key={i} className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+                  <div key={i} className="rounded-2xl bg-white/80 p-3 shadow-sm dark:bg-gray-700/50">
                     <p className="text-gray-700 dark:text-gray-300">{ex.en}</p>
                     {ex.zh && <p className="text-gray-400 dark:text-gray-500 mt-1">{ex.zh}</p>}
                   </div>
@@ -148,19 +149,19 @@ export default function FlashCard({ word, onGrade, index, total }: FlashCardProp
       <div className="grid grid-cols-3 gap-3">
         <button
           onClick={() => handleGrade(1)}
-          className="py-3 rounded-xl font-medium bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
+          className="py-3 rounded-2xl font-extrabold bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:-translate-y-1 hover:bg-red-100 dark:hover:bg-red-900/30 transition-all"
         >
           不认识
         </button>
         <button
           onClick={() => handleGrade(3)}
-          className="py-3 rounded-xl font-medium bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-colors"
+          className="py-3 rounded-2xl font-extrabold bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 hover:-translate-y-1 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-all"
         >
           模糊
         </button>
         <button
           onClick={() => handleGrade(5)}
-          className="py-3 rounded-xl font-medium bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors"
+          className="py-3 rounded-2xl font-extrabold bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 hover:-translate-y-1 hover:bg-green-100 dark:hover:bg-green-900/30 transition-all"
         >
           认识
         </button>

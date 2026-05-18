@@ -5,6 +5,8 @@ import { dailyWords } from '../../data/vocabulary/daily'
 import { useWordStore, applyEnrichment } from '../../stores/useWordStore'
 import FlashCard from '../../components/FlashCard'
 import type { Grade, Word } from '../../types/word'
+import Mascot from '../../components/Mascot'
+import { AnimatePresence, motion } from 'framer-motion'
 
 function shuffleArray<T>(arr: T[]): T[] {
   const result = [...arr]
@@ -53,6 +55,7 @@ export default function StudyPage() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [results, setResults] = useState<Record<string, Grade>>({})
   const [finished, setFinished] = useState(false)
+  const [streak, setStreak] = useState(0)
 
   if (studyQueue.length === 0) {
     return (
@@ -63,13 +66,14 @@ export default function StudyPage() {
           </Link>
           <h2 className="text-xl font-bold">学习</h2>
         </div>
-        <div className="text-center py-20">
+        <div className="bubbly-card rounded-[2rem] px-6 py-14 text-center">
+          <Mascot size="lg" mood="celebrate" gesture="clap" floating className="mx-auto mb-6" />
           <Trophy size={48} className="mx-auto text-success mb-4" />
-          <p className="text-xl font-bold">今日任务已完成</p>
+          <p className="display-font text-4xl text-slate-900 dark:text-white">今日任务已完成</p>
           <p className="text-gray-500 dark:text-gray-400 mt-2">明天继续加油！</p>
           <Link
             to="/vocabulary"
-            className="inline-block mt-6 px-6 py-2 bg-mw-red hover:bg-mw-red-hover text-white rounded-lg transition-colors"
+            className="inline-block mt-6 px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-extrabold transition-colors"
           >
             返回词库
           </Link>
@@ -85,6 +89,9 @@ export default function StudyPage() {
 
     if (grade < 3) {
       addMistake(word.id)
+      setStreak(0)
+    } else {
+      setStreak((s) => s + 1)
     }
 
     if (currentIndex + 1 >= studyQueue.length) {
@@ -107,21 +114,22 @@ export default function StudyPage() {
           <h2 className="text-xl font-bold">学习完成</h2>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-8 text-center space-y-4">
+        <div className="bubbly-card rounded-[2rem] p-8 text-center space-y-4">
+          <Mascot size="md" mood="celebrate" gesture="clap" floating className="mx-auto" />
           <Trophy size={48} className="mx-auto text-warning" />
-          <p className="text-2xl font-bold">本轮完成</p>
+          <p className="display-font text-4xl text-slate-900 dark:text-white">本轮完成</p>
 
           <div className="grid grid-cols-3 gap-4 py-4">
             <div>
-              <p className="text-2xl font-bold">{studyQueue.length}</p>
+              <p className="display-font text-3xl">{studyQueue.length}</p>
               <p className="text-sm text-gray-500 dark:text-gray-400">总计</p>
             </div>
             <div>
-              <p className="text-2xl font-bold text-success">{correct}</p>
+              <p className="display-font text-3xl text-success">{correct}</p>
               <p className="text-sm text-gray-500 dark:text-gray-400">认识</p>
             </div>
             <div>
-              <p className="text-2xl font-bold text-danger">{wrong}</p>
+              <p className="display-font text-3xl text-danger">{wrong}</p>
               <p className="text-sm text-gray-500 dark:text-gray-400">不认识</p>
             </div>
           </div>
@@ -136,7 +144,7 @@ export default function StudyPage() {
         <div className="flex gap-3">
           <Link
             to="/vocabulary"
-            className="flex-1 py-3 rounded-xl font-medium bg-gray-100 dark:bg-gray-700 text-center hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+            className="flex-1 py-3 rounded-2xl font-extrabold bg-white/80 dark:bg-gray-700 text-center hover:bg-white dark:hover:bg-gray-600 transition-colors"
           >
             返回词库
           </Link>
@@ -145,8 +153,9 @@ export default function StudyPage() {
               setCurrentIndex(0)
               setResults({})
               setFinished(false)
+              setStreak(0)
             }}
-            className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-medium bg-mw-red text-white hover:bg-mw-red-hover transition-colors"
+            className="flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-extrabold bg-slate-900 text-white hover:bg-slate-800 transition-colors"
           >
             <RotateCcw size={18} />
             再来一轮
@@ -159,18 +168,29 @@ export default function StudyPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
-        <Link to="/vocabulary" className="p-2 -ml-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+        <Link to="/vocabulary" className="p-2 -ml-2 rounded-xl hover:bg-white/70 dark:hover:bg-gray-700">
           <ArrowLeft size={20} />
         </Link>
-        <h2 className="text-xl font-bold">学习中</h2>
+        <h2 className="display-font text-3xl text-slate-900 dark:text-white">学习中</h2>
       </div>
 
-      <FlashCard
-        word={studyQueue[currentIndex]}
-        onGrade={handleGrade}
-        index={currentIndex}
-        total={studyQueue.length}
-      />
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={currentIndex}
+          initial={{ opacity: 0, x: 50 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -50 }}
+          transition={{ duration: 0.25, ease: 'easeOut' }}
+        >
+          <FlashCard
+            word={studyQueue[currentIndex]}
+            onGrade={handleGrade}
+            index={currentIndex}
+            total={studyQueue.length}
+            streak={streak}
+          />
+        </motion.div>
+      </AnimatePresence>
     </div>
   )
 }
