@@ -71,3 +71,15 @@ export default defineConfig([
   },
 ])
 ```
+
+---
+
+<div align="center">
+
+**北京韶聪泽明智能科技有限责任公司 · Zecrew**
+
+垂直行业 AI 数字员工
+
+🌐 [zecrew.com](https://zecrew.com)
+
+</div>
